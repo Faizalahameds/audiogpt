@@ -39,7 +39,7 @@ const AudioRecorder = () => {
   // Fetch response from the backend
   const fetchResponse = async (text) => {
     try {
-      const res = await axios.post("http://localhost:5000/api/gemini", { query: text });
+      const res = await axios.post("https://backend-gm6q.onrender.com/api/gemini", { query: text });
       setResponse(res.data.answer);
     } catch (error) {
       console.error("Error fetching response from API", error);
@@ -47,6 +47,7 @@ const AudioRecorder = () => {
   };
 
   return (
+    
     <div style={{ textAlign: "center", padding: "20px" }}>
       <button onClick={startRecording} disabled={isRecording}>
         {isRecording ? "Recording..." : "Start Recording"}

@@ -4,7 +4,7 @@ const cors = require("cors");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
@@ -51,3 +51,10 @@ app.post("/api/gemini", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+const corsOptions = {
+  origin: "https://faizalahameds.github.io/audiogpt/", // Replace with your GitHub Pages URL
+  methods: "GET,POST",
+  allowedHeaders: ["Content-Type"]
+};
+app.use(cors(corsOptions));
+
