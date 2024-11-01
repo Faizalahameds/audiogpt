@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/audiogpt/static/css/main.e6c13ad2.css",
+    "main.js": "/audiogpt/static/js/main.9e019612.js",
+    "static/js/453.199b5fda.chunk.js": "/audiogpt/static/js/453.199b5fda.chunk.js",
+    "index.html": "/audiogpt/index.html",
+    "main.e6c13ad2.css.map": "/audiogpt/static/css/main.e6c13ad2.css.map",
+    "main.9e019612.js.map": "/audiogpt/static/js/main.9e019612.js.map",
+    "453.199b5fda.chunk.js.map": "/audiogpt/static/js/453.199b5fda.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.9e019612.js"
+  ]
+}
