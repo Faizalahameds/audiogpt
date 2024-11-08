@@ -47,7 +47,6 @@ const AudioRecorder = () => {
   };
 
   return (
-    
     <div style={{ textAlign: "center", padding: "20px" }}>
       <button onClick={startRecording} disabled={isRecording}>
         {isRecording ? "Recording..." : "Start Recording"}
@@ -55,9 +54,10 @@ const AudioRecorder = () => {
       <h3>Transcript:</h3>
       <p>{transcript}</p>
       <h3>Response:</h3>
-      <p>{response}</p>
+      <div dangerouslySetInnerHTML={{ __html: response }} />
     </div>
   );
+  
 };
 
 export default AudioRecorder;
