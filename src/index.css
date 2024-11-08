@@ -11,3 +11,87 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+
+/* Container styling */
+.response-container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #f8f8f8;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+}
+
+/* Heading styling */
+.response-container h3 {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+/* Subheadings */
+.response-container h4 {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #444;
+  margin-top: 20px;
+}
+
+/* Paragraph styling */
+.response-container p,
+.response-container ul {
+  margin-bottom: 10px;
+  color: #555;
+  font-size: 1em;
+  line-height: 1.5;
+}
+
+/* Bullet points */
+.response-container ul {
+  list-style-type: disc;
+  padding-left: 20px;
+}
+
+/* Bold text for emphasis */
+.response-container strong {
+  font-weight: bold;
+}
+
+/* Code block styling */
+.response-container pre {
+  background-color: #282c34;
+  color: #f8f8f2;
+  padding: 15px;
+  border-radius: 5px;
+  overflow-x: auto;
+  font-size: 0.95em;
+  white-space: pre-wrap;
+  line-height: 1.4;
+}
+
+.response-container code {
+  font-family: 'Courier New', Courier, monospace;
+  color: #f8f8f2;
+}
+
+.response-container .hljs-keyword { color: #ff79c6; }
+.response-container .hljs-string { color: #50fa7b; }
+.response-container .hljs-title.function_ { color: #8be9fd; }
+.response-container .hljs-comment { color: #6272a4; }
+.response-container .hljs-number { color: #bd93f9; }
+.response-container .hljs-attr { color: #f1fa8c; }
+.response-container .hljs-property { color: #66d9ef; }
+
+/* Line spacing adjustments */
+.response-container p,
+.response-container ul,
+.response-container h3,
+.response-container h4 {
+  margin: 10px 0;
+}
+
