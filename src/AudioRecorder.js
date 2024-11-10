@@ -1,86 +1,118 @@
 // src/AudioRecorder.js
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMicrophone } from "@fortawesome/free-solid-svg-icons";
-import "./AudioRecorder.css"; // Import custom CSS
+import "./AudioRecorder.css";
+
+// Function to convert audio blob to base64 encoded string
+const audioBlobToBase64 = (blob) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const arrayBuffer = reader.result;
+      const base64Audio = btoa(
+        new Uint8Array(arrayBuffer).reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          ""
+        )
+      );
+      resolve(base64Audio);
+    };
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(blob);
+  });
+};
 
 const AudioRecorder = () => {
   const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState(null);
   const [transcript, setTranscript] = useState("");
   const [response, setResponse] = useState("");
 
-  const recognitionRef = useRef(null); // Use useRef to persist recognition instance across renders
-
-  // Start or stop recording and transcribing audio
-  const toggleRecording = () => {
-    if (!recognitionRef.current) {
-      if (!("webkitSpeechRecognition" in window)) {
-        alert("Speech recognition not supported by your browser.");
-        return;
+  useEffect(() => {
+    return () => {
+      if (mediaRecorder) {
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
       }
-    
-      // Create a new instance only if it doesn't already exist
-      recognitionRef.current = new window.webkitSpeechRecognition();
-      recognitionRef.current.lang = "en-US";
-      recognitionRef.current.continuous = false;
-      recognitionRef.current.interimResults = false;
+    };
+  }, [mediaRecorder]);
 
-      recognitionRef.current.onstart = () => setIsRecording(true);
-      recognitionRef.current.onresult = (event) => {
-        const transcriptText = event.results[0][0].transcript;
-        setTranscript(transcriptText);
-        fetchResponse(transcriptText); // Send transcript to the backend
-      };
-      recognitionRef.current.onerror = (event) => {
-        console.error("Speech recognition error", event);
-      };
-      recognitionRef.current.onend = () => setIsRecording(false);
-    }
+  const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
 
-    // If it's recording, stop the recording, else start it
-    if (isRecording) {
-      recognitionRef.current.stop(); // Stop recording if already recording
-      setIsRecording(false);
-    } else {
-      recognitionRef.current.start(); // Start recording
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      recorder.start();
+      setIsRecording(true);
+      setMediaRecorder(recorder);
+
+      recorder.addEventListener("dataavailable", async (event) => {
+        const audioBlob = event.data;
+        const base64Audio = await audioBlobToBase64(audioBlob);
+
+        try {
+          const response = await axios.post(
+            `https://speech.googleapis.com/v1/speech:recognize?key=${apiKey}`,
+            {
+              config: {
+                encoding: "WEBM_OPUS",
+                sampleRateHertz: 48000,
+                languageCode: "en-US",
+              },
+              audio: {
+                content: base64Audio,
+              },
+            }
+          );
+
+          if (response.data.results && response.data.results.length > 0) {
+            const transcriptText = response.data.results[0].alternatives[0].transcript;
+            setTranscript(transcriptText);
+            fetchResponse(transcriptText); // Send transcript to the backend
+          } else {
+            setTranscript("No transcription available");
+          }
+        } catch (error) {
+          console.error("Error with Google Speech-to-Text API:", error.response.data);
+        }
+      });
+    } catch (error) {
+      console.error("Error getting user media:", error);
     }
   };
 
-  // Fetch response from the backend
-  // Fetch response from the backend
-const fetchResponse = async (text) => {
-  try {
-    const res = await axios.post("https://backend-gm6q.onrender.com/api/gemini", { query: text });
-    let processedResponse = res.data.answer;
+  const stopRecording = () => {
+    if (mediaRecorder) {
+      mediaRecorder.stop();
+      setIsRecording(false);
+    }
+  };
 
-    // Make the bold content between ** and ** rendered as <strong> in HTML
-    processedResponse = processedResponse.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+  const fetchResponse = async (text) => {
+    try {
+      const res = await axios.post("https://backend-gm6q.onrender.com/api/gemini", { query: text });
+      let processedResponse = res.data.answer;
 
-    // Convert markdown-style bullet points to HTML list items
-    processedResponse = processedResponse.replace(/\* (.+)/g, "<ul><li>$1</li></ul>");
-    processedResponse = processedResponse.replace(/<\/ul><ul>/g, ''); // Remove unwanted nested lists
-    processedResponse = processedResponse.replace(/```python([\s\S]*?)```/g, "<pre><code>$1</code></pre>");
+      processedResponse = processedResponse.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+      processedResponse = processedResponse.replace(/\* (.+)/g, "<ul><li>$1</li></ul>");
+      processedResponse = processedResponse.replace(/<\/ul><ul>/g, ''); // Remove unwanted nested lists
+      processedResponse = processedResponse.replace(/```python([\s\S]*?)```/g, "<pre><code>$1</code></pre>");
+      processedResponse = processedResponse.trim().replace(/\s+/g, ' ');
 
-    // Clean up any extra white spaces or characters
-    processedResponse = processedResponse.trim().replace(/\s+/g, ' ');
-
-    // Set the processed response to state
-    setResponse(processedResponse);
-  } catch (error) {
-    console.error("Error fetching response from API", error);
-  }
-};
-
+      setResponse(processedResponse);
+    } catch (error) {
+      console.error("Error fetching response from API", error);
+    }
+  };
 
   return (
     <div className="audio-recorder-container">
-      <h1 className="title">AI Chatbot</h1>
+      <h1 className="title">AI Chatbot voice</h1>
       <button
         className={`record-button ${isRecording ? "recording" : ""}`}
-        onClick={toggleRecording}
-        disabled={false} // The button can be clicked at any time
+        onClick={isRecording ? stopRecording : startRecording}
       >
         <FontAwesomeIcon icon={faMicrophone} /> {isRecording ? "Stop Recording" : "Start Recording"}
       </button>
