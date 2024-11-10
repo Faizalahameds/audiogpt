@@ -49,14 +49,34 @@ const AudioRecorder = () => {
   };
 
   // Fetch response from the backend
-  const fetchResponse = async (text) => {
-    try {
-      const res = await axios.post("https://backend-gm6q.onrender.com/api/gemini", { query: text });
-      setResponse(res.data.answer);
-    } catch (error) {
-      console.error("Error fetching response from API", error);
-    }
-  };
+ // Fetch response from the backend
+// Fetch response from the backend
+// Fetch response from the backend
+const fetchResponse = async (text) => {
+  try {
+    const res = await axios.post("https://backend-gm6q.onrender.com/api/gemini", { query: text });
+    let processedResponse = res.data.answer;
+
+    // Make the bold content between ** and ** rendered as <strong> in HTML
+    processedResponse = processedResponse.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+    // Convert markdown-style bullet points to HTML list items
+    processedResponse = processedResponse.replace(/\* (.+)/g, "<ul><li>$1</li></ul>");
+    processedResponse = processedResponse.replace(/<\/ul><ul>/g, ''); // Remove unwanted nested lists
+    processedResponse = processedResponse.replace(/```python([\s\S]*?)```/g, "<pre><code>$1</code></pre>");
+
+    // Clean up any extra white spaces or characters
+    processedResponse = processedResponse.trim().replace(/\s+/g, ' ');
+
+    // Set the processed response to state
+    setResponse(processedResponse);
+  } catch (error) {
+    console.error("Error fetching response from API", error);
+  }
+};
+
+
+
 
   return (
     <div className="audio-recorder-container">

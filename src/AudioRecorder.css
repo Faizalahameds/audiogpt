@@ -7,19 +7,19 @@
     text-align: center;
     font-family: Arial, sans-serif;
     color: #333;
-    background-color: #f4f7fa;
+    background-color: #eaeacee9;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
   
   .title {
     font-size: 2em;
-    color: #4a90e2;
+    color: #03346E;
     margin-bottom: 20px;
   }
   
   .record-button {
-    background-color: #4a90e2;
+    background-color: #00CCDD;
     color: white;
     border: none;
     border-radius: 50px;
@@ -54,7 +54,7 @@
   }
   
   .response-container {
-    color: #555;
+    color: #f5f0f0;
     font-size: 0.95em;
     text-align: left;
   }
