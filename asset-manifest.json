@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/audiogpt/static/css/main.ca925c07.css",
-    "main.js": "/audiogpt/static/js/main.00b8cb9c.js",
+    "main.js": "/audiogpt/static/js/main.ddacf9ff.js",
     "static/js/453.199b5fda.chunk.js": "/audiogpt/static/js/453.199b5fda.chunk.js",
     "index.html": "/audiogpt/index.html",
     "main.ca925c07.css.map": "/audiogpt/static/css/main.ca925c07.css.map",
-    "main.00b8cb9c.js.map": "/audiogpt/static/js/main.00b8cb9c.js.map",
+    "main.ddacf9ff.js.map": "/audiogpt/static/js/main.ddacf9ff.js.map",
     "453.199b5fda.chunk.js.map": "/audiogpt/static/js/453.199b5fda.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.ca925c07.css",
-    "static/js/main.00b8cb9c.js"
+    "static/js/main.ddacf9ff.js"
   ]
 }
