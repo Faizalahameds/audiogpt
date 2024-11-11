@@ -51,7 +51,7 @@ const AudioRecorder = () => {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify(audioData),
+            body: JSON.stringify( audio: audioBytes ),
           })
           .then(response => response.json())
           .then(data => {
