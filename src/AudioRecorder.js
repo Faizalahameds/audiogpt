@@ -12,6 +12,8 @@ const AudioRecorder = () => {
   const [response, setResponse] = useState("");
   const [audioContext, setAudioContext] = useState(null);
   const [processor, setProcessor] = useState(null);
+  const silenceThreshold = 0.05; // Voice amplitude threshold
+  const silenceDuration = 1000; // Duration of silence before stopping (in milliseconds)
 
   // Function to send transcript to Gemini and process response
   const fetchResponse = async (text) => {
@@ -41,26 +43,32 @@ const AudioRecorder = () => {
       setIsRecording(true);
       setMediaRecorder(recorder);
 
-      // Set up AudioContext for silence detection
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       setAudioContext(audioCtx);
       const source = audioCtx.createMediaStreamSource(stream);
       const analyser = audioCtx.createAnalyser();
-      source.connect(analyser);
-      const scriptProcessor = audioCtx.createScriptProcessor(2048, 1, 1);
-      analyser.connect(scriptProcessor);
-      scriptProcessor.connect(audioCtx.destination);
+      analyser.fftSize = 2048; // FFT size for audio data analysis
+      const dataArray = new Float32Array(analyser.fftSize);
 
-      // Listen for silence
-      scriptProcessor.onaudioprocess = (event) => {
-        const buffer = event.inputBuffer.getChannelData(0);
-        const isSilent = buffer.every(sample => Math.abs(sample) < 0.01); // Adjust threshold if needed
-        if (isSilent) {
-          stopRecording(); // Stop recording when silence is detected
+      source.connect(analyser);
+
+      // Silence detection using a timeout
+      let silenceStart = performance.now();
+      const checkSilence = () => {
+        analyser.getFloatTimeDomainData(dataArray);
+        const hasVoice = dataArray.some(sample => Math.abs(sample) > silenceThreshold);
+
+        if (hasVoice) {
+          silenceStart = performance.now(); // Reset silence timer if voice is detected
+        } else if (performance.now() - silenceStart > silenceDuration) {
+          stopRecording(); // Stop recording if silence has lasted long enough
+        }
+
+        if (isRecording) {
+          requestAnimationFrame(checkSilence); // Continue checking for silence
         }
       };
-
-      setProcessor(scriptProcessor);
+      requestAnimationFrame(checkSilence);
 
       recorder.addEventListener("dataavailable", async (event) => {
         const audioBlob = event.data;
@@ -74,7 +82,7 @@ const AudioRecorder = () => {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify( {audio: audioBytes} ),
+            body: JSON.stringify({ audio: audioBytes }),
           });
 
           const data = await response.json();
@@ -92,9 +100,7 @@ const AudioRecorder = () => {
 
       recorder.addEventListener("stop", () => {
         setIsRecording(false);
-        // Clean up audio context and processor
         if (audioContext) audioContext.close();
-        if (processor) processor.disconnect();
       });
     } catch (error) {
       console.error("Error getting user media:", error);
@@ -109,14 +115,12 @@ const AudioRecorder = () => {
     if (audioContext) {
       audioContext.close();
     }
-    if (processor) {
-      processor.disconnect();
-    }
+    setIsRecording(false);
   };
 
   return (
     <div className="audio-recorder-container">
-      <h1 className="title">AI Chatbot 1</h1>
+      <h1 className="title">AI Chatbot</h1>
       <button
         className={`record-button ${isRecording ? "recording" : ""}`}
         onClick={isRecording ? stopRecording : startRecording}
@@ -126,7 +130,6 @@ const AudioRecorder = () => {
       <h3>Transcript:</h3>
       <p className="transcript">{transcript}</p>
       <h3>Response:</h3>
-      {/* Display the processed Gemini response */}
       <div className="response-container" dangerouslySetInnerHTML={{ __html: response }} />
     </div>
   );
