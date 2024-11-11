@@ -51,14 +51,8 @@ const AudioRecorder = () => {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify( audio: audioBytes ),
-          })
-          .then(response => response.json())
-          .then(data => {
-            console.log('Success:', data);
-          })
-          .catch((error) => {
-            console.error('Error:', error);
+            body: JSON.stringify( {audio: audioBytes} ),
+        
         });
     
           const data = await response.json();
