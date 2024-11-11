@@ -96,7 +96,7 @@ const AudioRecorder = () => {
 
   return (
     <div className="audio-recorder-container">
-      <h1 className="title">AI Chatbot Voice</h1>
+      <h1 className="title">AI Chatbot </h1>
       <button
         className={`record-button ${isRecording ? "recording" : ""}`}
         onClick={isRecording ? stopRecording : startRecording}
