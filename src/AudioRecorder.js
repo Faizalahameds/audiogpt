@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMicrophone } from "@fortawesome/free-solid-svg-icons";
 import "./AudioRecorder.css";
@@ -10,6 +10,8 @@ const AudioRecorder = () => {
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [transcript, setTranscript] = useState("");
   const [response, setResponse] = useState("");
+  const [audioContext, setAudioContext] = useState(null);
+  const [processor, setProcessor] = useState(null);
 
   // Function to send transcript to Gemini and process response
   const fetchResponse = async (text) => {
@@ -38,12 +40,33 @@ const AudioRecorder = () => {
       recorder.start();
       setIsRecording(true);
       setMediaRecorder(recorder);
-    
+
+      // Set up AudioContext for silence detection
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      setAudioContext(audioCtx);
+      const source = audioCtx.createMediaStreamSource(stream);
+      const analyser = audioCtx.createAnalyser();
+      source.connect(analyser);
+      const scriptProcessor = audioCtx.createScriptProcessor(2048, 1, 1);
+      analyser.connect(scriptProcessor);
+      scriptProcessor.connect(audioCtx.destination);
+
+      // Listen for silence
+      scriptProcessor.onaudioprocess = (event) => {
+        const buffer = event.inputBuffer.getChannelData(0);
+        const isSilent = buffer.every(sample => Math.abs(sample) < 0.01); // Adjust threshold if needed
+        if (isSilent) {
+          stopRecording(); // Stop recording when silence is detected
+        }
+      };
+
+      setProcessor(scriptProcessor);
+
       recorder.addEventListener("dataavailable", async (event) => {
         const audioBlob = event.data;
         const audioBuffer = await audioBlob.arrayBuffer();
         const audioBytes = Buffer.from(audioBuffer).toString("base64");
-    
+
         // Send audio data to your backend for transcription and Gemini processing
         try {
           const response = await fetch('https://backend-gm6q.onrender.com/transcribe', {
@@ -52,9 +75,8 @@ const AudioRecorder = () => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify( {audio: audioBytes} ),
-        
-        });
-    
+          });
+
           const data = await response.json();
           if (response.ok) {
             setTranscript(data.transcript); // Display the transcript
@@ -67,15 +89,13 @@ const AudioRecorder = () => {
           console.error("Error sending audio data to backend:", error);
         }
       });
-    
+
       recorder.addEventListener("stop", () => {
         setIsRecording(false);
+        // Clean up audio context and processor
+        if (audioContext) audioContext.close();
+        if (processor) processor.disconnect();
       });
-    
-      // Automatically stop recording after a certain duration (e.g., 5 seconds)
-      setTimeout(() => {
-        recorder.stop();
-      }, 5000); // Change this duration as needed
     } catch (error) {
       console.error("Error getting user media:", error);
     }
@@ -86,11 +106,17 @@ const AudioRecorder = () => {
     if (mediaRecorder) {
       mediaRecorder.stop();
     }
+    if (audioContext) {
+      audioContext.close();
+    }
+    if (processor) {
+      processor.disconnect();
+    }
   };
 
   return (
     <div className="audio-recorder-container">
-      <h1 className="title">AI Chatbot </h1>
+      <h1 className="title">AI Chatbot 1</h1>
       <button
         className={`record-button ${isRecording ? "recording" : ""}`}
         onClick={isRecording ? stopRecording : startRecording}
