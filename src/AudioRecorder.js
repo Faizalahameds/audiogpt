@@ -46,7 +46,7 @@ const AudioRecorder = () => {
     
         // Send audio data to your backend for transcription and Gemini processing
         try {
-          const response = await fetch('http://localhost:5000/transcribe', {
+          const response = await fetch('https://backend-gm6q.onrender.com/transcribe', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
