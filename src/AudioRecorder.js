@@ -22,11 +22,15 @@ const AudioRecorder = () => {
       let processedResponse = res.data.answer;
 
       // Process the response (e.g., convert markdown to HTML)
-      processedResponse = processedResponse.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-      processedResponse = processedResponse.replace(/\* (.+)/g, "<ul><li>$1</li></ul>");
-      processedResponse = processedResponse.replace(/<\/ul><ul>/g, ''); // Remove unwanted nested lists
-      processedResponse = processedResponse.replace(/```python([\s\S]*?)```/g, "<pre><code>$1</code></pre>");
-      processedResponse = processedResponse.trim().replace(/\s+/g, ' ');
+      processedResponse = processedResponse
+      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")             // Bold text
+      .replace(/\n\n/g, "<p></p>")                                  // Paragraph separation
+      .replace(/(?:\*|-)\s+(.+)/g, "<ul><li>$1</li></ul>")          // Bullet points
+      .replace(/<\/ul><ul>/g, '')                                   // Remove unwanted nested <ul> tags
+      .replace(/(?:\d+\.)\s+(.+)/g, "<ol><li>$1</li></ol>")         // Numbered lists
+      .replace(/<\/ol><ol>/g, '')                                   // Remove unwanted nested <ol> tags
+      .replace(/\n/g, "<br>")                                       // Single line breaks
+      .replace(/```([\s\S]*?)```/g, "<pre><code>$1</code></pre>"); 
 
       setResponse(processedResponse); // Set the processed response to state
     } catch (error) {
